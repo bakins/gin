@@ -2,6 +2,9 @@ package gin
 
 import (
 	"net/http"
+	"bufio"
+        "errors"
+        "net"
 )
 
 type (
@@ -43,4 +46,13 @@ func (w *responseWriter) Status() int {
 
 func (w *responseWriter) Written() bool {
 	return w.written
+}
+
+// allow connection hijacking
+func (w *ResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hijacker, ok := w.ResponseWriter.(http.Hijacker)
+	if !ok {
+		return nil, nil, errors.New("the ResponseWriter doesn't support the Hijacker interface")
+	}
+	return hijacker.Hijack()
 }
